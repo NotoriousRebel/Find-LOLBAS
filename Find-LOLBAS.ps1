@@ -1,7 +1,7 @@
 function Find-LOLBAS{
 <#
 .SYNOPSIS
-Script which can be used to find living off land binaries and scripts on a target machine.
+Script which can be used to find living off the land binaries and scripts on a target machine.
 
 .DESCRIPTION
 The script searches through known locations of Living off Land Binaries and Scripts
@@ -14,7 +14,7 @@ script, the full path, and how to use it.
   Creation Date:  6/29/19
 
 .EXAMPLE
-PS C:\> Find-LOLBAS
+PS C:\> .\Find-LOLBAS.ps1
 
 .LINK
 https://github.com/LOLBAS-Project/LOLBAS
