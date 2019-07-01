@@ -22,5 +22,5 @@ see the [License](LICENSE) file for details
 
 ## Acknowledgments
 
-This project wouldn't be possible without the [LOLBAS]((https://github.com/LOLBAS-Project/LOLBAS)) project. 
+This project wouldn't be possible without the [LOLBAS](https://github.com/LOLBAS-Project/LOLBAS) project. 
 
