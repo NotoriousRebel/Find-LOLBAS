@@ -6,7 +6,7 @@ A simple Powershell script to find living off land binaries and scripts on a sys
 ## License
 
 This project is licensed under the BSD 3-Clause License -
-see the [License.MD](LICENSE.md) file for details
+see the [License.MD](LICENSE) file for details
 
 ## Acknowledgments
 
