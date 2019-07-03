@@ -1,3 +1,4 @@
+Param([string] $OutFile)
 function Find-LOLBAS{
 <#
 .SYNOPSIS
@@ -8,6 +9,9 @@ The script searches through known locations of Living off Land Binaries and Scri
 and identifies if they exist. In the case they do exist it will output the name of the binary or
 script, the full path, and how to use it.
 
+.PARAMETER Outfile
+If specified output will be put into an outfile of this name
+
 .NOTES
   Version:        1.0
   Author:         NotoriousRebel
@@ -15,10 +19,16 @@ script, the full path, and how to use it.
 
 .EXAMPLE
 PS C:\> .\Find-LOLBAS.ps1
-
+PS C:\> .\Find-LOLBAS.ps1 -Outfile "results.txt"
 .LINK
 https://github.com/LOLBAS-Project/LOLBAS
 #>
+
+Param(
+    [Parameter(Mandatory = $False)]
+    [string]
+    $OutFile
+)
 
 function pretty_print([string] $line){
    <#
@@ -47,6 +57,38 @@ function pretty_print([string] $line){
     Write-Host 'rcsi.exe: rcsi.exe bypass.csx'
     Write-Host 'te.exe: te.exe bypass.wsc'
     Write-Host 'Tracker.exe: Tracker.exe /d .\calc.dll /c C:\Windows\write.exe'
+}
+
+function pretty_print_file([string] $line, [string]$filename){
+  <#
+   .SYNOPSIS
+   A helper function that pretty prints the output from find_exes 
+
+   .DESCRIPTION
+   This function outputs the information returned from the find_exes function
+   and outputs in an easy to understand format.
+
+   .PARAMETER line
+   String returned from find_exes function that contains what binary or scripts
+   were found on system.
+
+   .PARAMETER filename
+   If exists indicates user wants to output information to a file
+
+   .OUTPUTS
+   Outputs information in an easy to read format. 
+
+   #>
+   'Found these binaries on the system: ' | Out-File $OutFile
+   Add-Content $OutFile $line
+   Add-Content $OutFile 'Must verify these manually: '
+   Add-Content $OutFile 'Bginfo.exe: bginfo.exe bginfo.bgi /popup /nolicprompt'
+   Add-Content $OutFile 'dnx.exe: dnx.exe consoleapp'
+   Add-Content $OutFile 'msxsl.exe: msxsl.exe customers.xml script.xsl';
+   Add-Content $OutFile 'Nvuhda6.exe: nvuhda6.exe System calc.exe'
+   Add-Content $OutFile 'rcsi.exe: rcsi.exe bypass.csx'
+   Add-Content $OutFile 'te.exe: te.exe bypass.wsc'
+   Add-Content $OutFile 'Tracker.exe: Tracker.exe /d .\calc.dll /c C:\Windows\write.exe'
 }
 
 function find_exes([Hashtable]$dict){
@@ -320,7 +362,19 @@ $dict = @{'C:\Windows\explorer.exe' = 'Explorer.exe', 'explorer.exe calc.exe';
   $dict[$localappdata + '\Microsoft\Teams\update.exe'] = 'Update.exe', 'Update.exe --download [url to package]'
   $dict[$localappdata + '\Microsoft\Teams\current\Squirrel.exe'] = 'Squirrel.exe', 'squirrel.exe --download [url to package]'
   $line = find_exes($dict)
-  pretty_print($line)
+
+  if($OutFile){
+    pretty_print_file($line, $OutFile)
+  }
+
+  else{
+    pretty_print($line)
+  }
 }
 
-Find-LOLBAS
+if ($OutFile){
+  Find-LOLBAS -OutFile $OutFile
+}
+else{
+  Find-LOLBAS
+}
