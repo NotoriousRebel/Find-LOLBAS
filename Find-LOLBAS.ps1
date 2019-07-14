@@ -30,7 +30,10 @@ Param(
     $OutFile
 )
 
-function pretty_print([string] $line){
+function format_string([string]$line){
+  return $line
+}
+function pretty_print([string] $line, [string] $manual){
    <#
     .SYNOPSIS
     A helper function that pretty prints the output from find_exes 
@@ -47,19 +50,59 @@ function pretty_print([string] $line){
     Outputs information in an easy to read format. 
 
     #>
-    Write-Host 'Found these binaries on the system: ' -ForegroundColor "Yellow"
-    Write-Host $line
-    Write-Host 'Must verify these manually: ' -ForegroundColor "Yellow"
-    Write-Host 'Bginfo.exe: bginfo.exe bginfo.bgi /popup /nolicprompt'
-    Write-Host 'dnx.exe: dnx.exe consoleapp'
-    Write-Host 'msxsl.exe: msxsl.exe customers.xml script.xsl';
-    Write-Host 'Nvuhda6.exe: nvuhda6.exe System calc.exe'
-    Write-Host 'rcsi.exe: rcsi.exe bypass.csx'
-    Write-Host 'te.exe: te.exe bypass.wsc'
-    Write-Host 'Tracker.exe: Tracker.exe /d .\calc.dll /c C:\Windows\write.exe'
+    $line -split "`r`n" | ForEach-Object {
+      # Initialize a custom object whose properties will reflect 
+      # the input line's tokens (column values).
+      $obj = New-Object PSCustomObject
+      # Add each whitespace-separated token as a property.
+      $counter = 0
+      foreach ($token in $_ -split ' xx ' -ne '') {   
+        if (0 -eq $counter){
+          $counter++
+          Add-member -InputObject $obj -MemberType NoteProperty -Name "Name" -value $token -Force
+  
+        }
+        elseif(1 -eq $counter){
+          $counter++
+          Add-member -InputObject $obj -MemberType NoteProperty -Name "Path" -value $token -Force 
+        }
+        else{
+          $counter++
+          Add-member -InputObject $obj -MemberType NoteProperty -Name "Command" -value $token -Force
+        }
+      }
+      $obj
+    } | Sort-Object -Property Name | Format-Table  -AutoSize -Wrap -Property Name,Path,Command 
+    
+    #Write-Host "Must verify manually " -ForegroundColor "Yellow"
+   # Write-Host "`r`n"
+    $manual -split "`r`n" | ForEach-Object {
+      # Initialize a custom object whose properties will reflect 
+      # the input line's tokens (column values).
+      $obj = New-Object PSCustomObject
+      # Add each whitespace-separated token as a property.
+      $counter = 0
+      foreach ($token in $_ -split ' xx ',3 -ne '') {   
+        if (0 -eq $counter){
+          $counter++
+          $token = $token -replace '\s',''
+          Add-member -InputObject $obj -MemberType NoteProperty -Name "Name" -value $token -Force
+  
+        }
+        elseif(1 -eq $counter){
+          $counter++
+          Add-member -InputObject $obj -MemberType NoteProperty -Name "Path" -value $token -Force 
+        }
+        else{
+          $counter++
+          Add-member -InputObject $obj -MemberType NoteProperty -Name "Command" -value $token -Force
+        }
+      }
+      $obj
+    } | Sort-Object -Property Name | Format-Table  -AutoSize -Wrap -Property Name,Path,Command 
 }
 
-function pretty_print_file([string] $line, [string]$filename){
+function pretty_print_file([string] $line, [string] $manual){
   <#
    .SYNOPSIS
    A helper function that pretty prints the output from find_exes 
@@ -79,16 +122,54 @@ function pretty_print_file([string] $line, [string]$filename){
    Outputs information in an easy to read format. 
 
    #>
-   'Found these binaries on the system: ' | Out-File $OutFile
-   Add-Content $OutFile $line
-   Add-Content $OutFile 'Must verify these manually: '
-   Add-Content $OutFile 'Bginfo.exe: bginfo.exe bginfo.bgi /popup /nolicprompt'
-   Add-Content $OutFile 'dnx.exe: dnx.exe consoleapp'
-   Add-Content $OutFile 'msxsl.exe: msxsl.exe customers.xml script.xsl';
-   Add-Content $OutFile 'Nvuhda6.exe: nvuhda6.exe System calc.exe'
-   Add-Content $OutFile 'rcsi.exe: rcsi.exe bypass.csx'
-   Add-Content $OutFile 'te.exe: te.exe bypass.wsc'
-   Add-Content $OutFile 'Tracker.exe: Tracker.exe /d .\calc.dll /c C:\Windows\write.exe'
+  
+   $line -split "`r`n" | ForEach-Object {
+    # Initialize a custom object whose properties will reflect 
+    # the input line's tokens (column values).
+    $obj = New-Object PSCustomObject
+    # Add each whitespace-separated token as a property.
+    $counter = 0
+    foreach ($token in $_ -split ' xx ' -ne '') {   
+      if (0 -eq $counter){
+        $counter++
+        Add-member -InputObject $obj -MemberType NoteProperty -Name "Name" -value $token -Force
+
+      }
+      elseif(1 -eq $counter){
+        $counter++
+        Add-member -InputObject $obj -MemberType NoteProperty -Name "Path" -value $token -Force 
+      }
+      else{
+        $counter++
+        Add-member -InputObject $obj -MemberType NoteProperty -Name "Command" -value $token -Force
+      }
+    }
+    $obj
+  } | Sort-Object -Property Name | Format-Table  -AutoSize -Wrap -Property Name,Path,Command | Out-File $OutFile
+
+  $manual -split "`r`n" | ForEach-Object {
+    # Initialize a custom object whose properties will reflect 
+    # the input line's tokens (column values).
+    $obj = New-Object PSCustomObject
+    # Add each whitespace-separated token as a property.
+    $counter = 0
+    foreach ($token in $_ -split ' xx ',3 -ne '') {   
+      if (0 -eq $counter){
+        $counter++
+        Add-member -InputObject $obj -MemberType NoteProperty -Name "Name" -value $token -Force
+
+      }
+      elseif(1 -eq $counter){
+        $counter++
+        Add-member -InputObject $obj -MemberType NoteProperty -Name "Path" -value $token -Force 
+      }
+      else{
+        $counter++
+        Add-member -InputObject $obj -MemberType NoteProperty -Name "Command" -value $token -Force
+      }
+    }
+    $obj
+  } | Sort-Object -Property Name | Format-Table  -AutoSize -Wrap -Property Name,Path,Command | Add-Content $OutFile
 }
 
 function find_exes([Hashtable]$dict){
@@ -133,9 +214,10 @@ function find_exes([Hashtable]$dict){
     
     foreach($path in $paths){
         $lst = $dict[$path]
-        $line += $lst[0] + '    Path: ' + '"' + $path + '"' + '    Command: ' + '"' + $lst[1] + '"'
-        $line += "`r`n"
+        $line += $lst[0] + ' xx ' + $path + ' xx ' + $lst[1] + "`r`n"
+        #$line += $lst[0] + ' ' + $path + ' ' + $lst[1] + "`r`n"
     }
+
     return $line
 }
 
@@ -362,17 +444,25 @@ $dict = @{'C:\Windows\explorer.exe' = 'Explorer.exe', 'explorer.exe calc.exe';
   $dict[$localappdata + '\Microsoft\Teams\update.exe'] = 'Update.exe', 'Update.exe --download [url to package]'
   $dict[$localappdata + '\Microsoft\Teams\current\Squirrel.exe'] = 'Squirrel.exe', 'squirrel.exe --download [url to package]'
   $line = find_exes($dict)
-
+  $manual = ''
+  $manual += 'Bginfo.exe xx Must Verify Manually xx bginfo.exe bginfo.bgi /popup /nolicprompt' +  "`r`n"
+  $manual += 'dnx.exe xx Must Verify Manually xx dnx.exe consoleapp' +  "`r`n"
+  $manual += 'msxsl.exe xx Must Verify Manually xx msxsl.exe customers.xml script.xsl' +  "`r`n"
+  $manual += 'Nvuhda6.exe xx Must Verify Manually xx nvuhda6.exe System calc.exe' +  "`r`n"
+  $manual += 'rcsi.exe  xx Must Verify Manually xx rcsi.exe bypass.csx' +  "`r`n"
+  $manual += 'te.exe xx Must Verify Manually xx te.exe bypass.wsc' +  "`r`n"
+  $manual += 'Tracker.exe xx Must Verify Manually xx Tracker.exe /d .\calc.dll /c C:\Windows\write.exe' +  "`r`n"
   if($OutFile){
-    pretty_print_file($line, $OutFile)
+    pretty_print_file($line, $manual)
   }
 
   else{
-    pretty_print($line)
+    pretty_print($line, $manual)
   }
 }
 
 if ($OutFile){
+  Write-Host "Outfile: $OutFile"
   Find-LOLBAS -OutFile $OutFile
 }
 else{
