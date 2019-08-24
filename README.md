@@ -22,5 +22,9 @@ see the [License](LICENSE) file for details
 
 ## Acknowledgments
 
-This project wouldn't be possible without the [LOLBAS](https://github.com/LOLBAS-Project/LOLBAS) project. 
+This project wouldn't be possible without the [LOLBAS](https://github.com/LOLBAS-Project/LOLBAS) project.
 
+### Roadmap
+
+- [ ] Add option to run script by executing C# code in Powershell
+- [ ] Add option to allow user to encode payload by loading Crypt32.dll
